@@ -192,24 +192,35 @@ loop_cifrado:
 fin_cifrado:
 
 	;Escribimos el \0 al final para que printCADENA FUNCIONES
-	ADDI r10,r0, MENSAJE_CIFRADO
-	ADD r10,r10,r16
-	SB 0(r10),r0		;Escribimos byte 0
-
 	;;MOSTRAMOS MENSAJE CIFRADO COMPLETO
 	ADDI r30,r0,STR_CIFRADO		
 	JAL printCADENA
 	JAL print_LN
 
-	ADDI r30,r0,MENSAJE		
-	JAL printCADENA
+	ADDI r16,r0,0
+	LW r19,MENSAJE_LEN
+
+loop_print_cifrado:
+	BEQZ r19,fin_print_cifrado
+	ADDI r10,r0, MENSAJE_CIFRADO
+	ADD r10,r10,r16
+
+	LB r30,0(r10)	
+
+	JAL printHEX
+	JAL print_ESPACIO
+
+	ADDI r16,r16,1
+	SUBI r19,r19,1
+
+	J loop_print_cifrado
+
+fin_print_cifrado:
 	JAL print_LN
 
-	ADDI r30,r0,MENSAJE_CIFRADO		
+	ADDI r30,r0,MENSAJE
 	JAL printCADENA
 	JAL print_LN
-
-
 
 
 ;;C ==>  Cifrar la cadena MENSAJE_CIFRADO con la CLAVE empleando el cifrado xor carácter a carácter y 
