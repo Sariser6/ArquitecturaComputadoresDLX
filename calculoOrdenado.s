@@ -31,6 +31,15 @@ main:
 	; COMPROBAMOS DIVISIONES POR 0 (EN CASO DE QUE SEA VERDADERA, SALTAMOS A DIVISION POR 0)
 	LF f30, cero
 
+	DIVF f20,f0,f5		; f20 = A/F
+	DIVF f21,f1,f4		; f21 = B/E
+	DIVF f22,f2,f3		; f22 = C/D
+
+	;CALCULOS PARA LAS DIVISIONES
+	MULTF f10, f0, f1	; f10 = A*B
+	MULTF f11, f4, f5	; f11 = E*F
+
+	;COMPROBACIONES DE SEGURIDAD
 	EQF f5, f30		; comprueba si F == 0
 	BFPT division_por_cero
 
@@ -40,58 +49,34 @@ main:
 	EQF f3, f30		; comprueba si D == 0
 	BFPT division_por_cero
 
-
-
-	;A*B*C PARA EL DENOMINADOR DE E/(A*B*C)
-	MULTF f10, f0, f1	; f10 = A*B
 	MULTF f10, f10, f2	; f10 = A*B*C
 
 	EQF f10, f30		; comprueba si A*B*C == 0
 	BFPT division_por_cero
 
-
-	;E*F PARA EL DENOMINADOR DE D/(E*F)
-	MULTF f11, f4, f5	; f11 = E*F
-
 	EQF f11, f30		; comprueba si E*F == 0
 	BFPT division_por_cero
 
-	; A/F
-	DIVF f20,f0,f5		; f20 = A/F
+	;LANZAMIENTO DE LAS DIVISIONES
+	DIVF f23,f4,f10		; f23 = E/(A*B*C)
+	DIVF f24,f3,f11		; f24 = D/(E*F)
 
 	;MIENTRAS SE CALCULA A/F, HACEMOS LAS SUMAS INDEPENDIENTES
-	; CALCULAMOS (A+B+C)
 	ADDF f26,f0,f1		; f26 = A + B
-	ADDF f26,f26,f2		; f26 = A + B + C
-
-	; CALCULAMOS (D+E+F)
 	ADDF f27,f3,f4		; f27 = D + E
+	
+	ADDF f26,f26,f2		; f26 = A + B + C
 	ADDF f27,f27,f5		; f27 = D + E + F
 
-	; CALCULAMOS (A+B+C) * (D+E+F)
+	; MIENTRAS TERMINAN LAS DIVISIONES, HACEMOS LA MULTIPLICACION
 	MULTF f28,f26,f27	; f28 = (A+B+C) * (D+E+F)
 
 
-	; TRAS HACER TODO LO ANTERIOR, LA DIVISION YA ESTARÁ LIBRE
-	; B/E
-	DIVF f21,f1,f4		; f21 = B/E
-
-
-	; C/D
-	DIVF f22,f2,f3		; f22 = C/D
-
-	; CALCULAMOS E/(A*B*C)
-	DIVF f23,f4,f10		; f23 = E/(A*B*C)
-
-	; CALCULAMOS D/(E*F)
-	DIVF f24,f3,f11		; f24 = D/(E*F)
-
-
-	;SUMAMOS LOS 5 TERMINOS ANTERIORES
-	ADDF f25,f20,f21	; f25 = A/F + B/E
-	ADDF f25,f25,f22	; f25 = + C/D
-	ADDF f25,f25,f23	; f25 = + E/(A*B*C)
-	ADDF f25,f25,f24	; f25 = + D/(E*F)
+	;SUMAMOS LOS 5 TERMINOS ANTERIORES, YA QUE YA HABRAN ACABADO LAS DIVISIONES
+	ADDF f20,f20,f21	; f25 = A/F + B/E
+	ADDF f22,f22,f23	; f25 = + C/D
+	ADDF f20,f20,f22	; f25 = + E/(A*B*C)
+	ADDF f25,f20,f24	; f25 = + D/(E*F)
 
 
 	; CALCULAMOS RESULTADO FINAL
