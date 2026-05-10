@@ -1,5 +1,5 @@
 .data  
-;; INICIO VARIABLES DE ENTRADA Y SALIDA: NO MODIFICAR ORDEN 
+;; INICIO VARIABLES DE ENTRADA Y SALIDA
 
 MENSAJE:  .asciiz "HOLA MUNDO." 
     .align  4 
@@ -352,26 +352,5 @@ printHEX:
 	ADDI  r14,r0,PrintPtroHEX 
 	TRAP  5 
 	JR  r31 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
