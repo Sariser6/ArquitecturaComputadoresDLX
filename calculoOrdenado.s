@@ -1,99 +1,85 @@
-.data  
-;; INICIO VARIABLES DE ENTRADA Y SALIDA: NO MODIFICAR ORDEN 
-A:				.float		10.0
-B:				.float		20.0
-C:				.float		30.0
-D:				.float		40.0
-E:				.float		50.0
-F:				.float		60.0
-
-Resultado:		.float		0
-
-;; FIN VARIABLES DE E/S 
-
-
-cero:			.float 		0.0
+.data
+;; INICIO VARIABLES DE ENTRADA Y SALIDA: NO MODIFICAR ORDEN
+A:          .float  10.0
+B:          .float  20.0
+C:          .float  30.0
+D:          .float  40.0
+E:          .float  50.0
+F:          .float  60.0
+Resultado:  .float  0
+;; FIN VARIABLES DE E/S
+cero:       .float  0.0
 
 .text
 .global main
 
 main:
+    LF f30, cero
+    LF f0, A
+    LF f1, B
+    LF f2, C
+    LF f3, D
+    LF f4, E
+    LF f5, F
 
-	;; CARGAMOS LOS VALORES EN LOS REGISTROS FLOTANTES
-	LF f0, A 	; f0 = A
-	LF f1, B 	; f1 = B
-	LF f2, C 	; f2 = C
-	LF f3, D 	; f3 = D
-	LF f4, E 	; f4 = E
-	LF f5, F 	; f5 = F
+    ; Chequeo F!=0 para DIV1
+    EQF f5, f30
+    BFPT division_por_cero
 
+    DIVF f20, f0, f5    ; --- DIV 1 (A/F) ---
 
-	; COMPROBAMOS DIVISIONES POR 0 (EN CASO DE QUE SEA VERDADERA, SALTAMOS A DIVISION POR 0)
-	LF f30, cero
+    ; Adelantamos chequeos D!=0, E!=0 para aprovechar el tiempo
+    EQF f4, f30
+    BFPT division_por_cero
+    EQF f3, f30
+    BFPT division_por_cero
 
-	DIVF f20,f0,f5		; f20 = A/F
-	DIVF f21,f1,f4		; f21 = B/E
-	DIVF f22,f2,f3		; f22 = C/D
+    ; Aprovechamos los ciclos de espera de la unidad DIV para trabajo independiente
+    MULTF f10, f0, f1   ; A*B
+    MULTF f11, f4, f5   ; E*F
+    ADDF f26, f0, f1    ; A+B
+    ADDF f27, f3, f4    ; D+E
 
-	;CALCULOS PARA LAS DIVISIONES
-	MULTF f10, f0, f1	; f10 = A*B
-	MULTF f11, f4, f5	; f11 = E*F
+    DIVF f21, f1, f4    ; --- DIV 2 (B/E) ---
 
-	;COMPROBACIONES DE SEGURIDAD
-	EQF f5, f30		; comprueba si F == 0
-	BFPT division_por_cero
+    ; Continuamos rellenando los huecos mientras arranca DIV2
+    ADDF f26, f26, f2   ; (A+B)+C
+    ADDF f27, f27, f5   ; (D+E)+F
 
-	EQF f4, f30		; comprueba si E == 0
-	BFPT division_por_cero
+    DIVF f22, f2, f3    ; --- DIV 3 (C/D) ---
 
-	EQF f3, f30		; comprueba si D == 0
-	BFPT division_por_cero
+    MULTF f10, f10, f2  ; f10 = A*B*C
+    MULTF f28, f26, f27 ; f28 = (A+B+C)*(D+E+F)
 
-	MULTF f10, f10, f2	; f10 = A*B*C
+    ; Comprobamos E*F != 0 para DIV5
+    EQF f11, f30
+    BFPT division_por_cero
 
-	EQF f10, f30		; comprueba si A*B*C == 0
-	BFPT division_por_cero
+    ; Comprobamos A*B*C != 0 para DIV4
+    EQF f10, f30
+    BFPT division_por_cero
 
-	EQF f11, f30		; comprueba si E*F == 0
-	BFPT division_por_cero
+    DIVF f23, f4, f10   ; --- DIV 4 (E / A*B*C) ---
 
-	;LANZAMIENTO DE LAS DIVISIONES
-	DIVF f23,f4,f10		; f23 = E/(A*B*C)
-	DIVF f24,f3,f11		; f24 = D/(E*F)
+    DIVF f24, f3, f11   ; --- DIV 5 (D / E*F) ---
 
-	;MIENTRAS SE CALCULA A/F, HACEMOS LAS SUMAS INDEPENDIENTES
-	ADDF f26,f0,f1		; f26 = A + B
-	ADDF f27,f3,f4		; f27 = D + E
-	
-	ADDF f26,f26,f2		; f26 = A + B + C
-	ADDF f27,f27,f5		; f27 = D + E + F
+    ; --- Reagrupación final ---
+    ; Al llegar aquí, DIV1 y DIV2 se lanzaron hace más de 40 ciclos, ya han terminado.
+    ADDF f25, f20, f21  ; Div1 + Div2
+    ADDF f25, f25, f22  ; (Div1+Div2) + Div3
 
-	; MIENTRAS TERMINAN LAS DIVISIONES, HACEMOS LA MULTIPLICACION
-	MULTF f28,f26,f27	; f28 = (A+B+C) * (D+E+F)
+    ; Estas últimas sufrirán un RAW stall (dependencia de datos) esperando a que DIV4/DIV5 acaben,
+    ; lo cual es matemáticamente inevitable al tener el cuello de botella de 1 sola unidad DIV.
+    ADDF f29, f23, f24  ; Div4 + Div5
+    ADDF f25, f25, f29  ; Suma total de las 5 fracciones
 
+    MULTF f31, f25, f28 ; Total * Multiplicador final
 
-	;SUMAMOS LOS 5 TERMINOS ANTERIORES, YA QUE YA HABRAN ACABADO LAS DIVISIONES
-	ADDF f20,f20,f21	; f25 = A/F + B/E
-	ADDF f22,f22,f23	; f25 = + C/D
-	ADDF f20,f20,f22	; f25 = + E/(A*B*C)
-	ADDF f25,f20,f24	; f25 = + D/(E*F)
-
-
-	; CALCULAMOS RESULTADO FINAL
-	MULTF f31,f25,f28	
-
-	; GUARDAMOS RESULTADO
-	SF Resultado, f31
-
-
-	J fin
-
+    SF Resultado, f31
+    J fin
 
 division_por_cero:
-	; EN CASO DE DIVISION POR 0, RESULTADO = 0
-	LF f31, cero
-	SF Resultado, f31
-
-
+    LF f31, cero
+    SF Resultado, f31
 fin:
-	TRAP 0
+    TRAP 0
