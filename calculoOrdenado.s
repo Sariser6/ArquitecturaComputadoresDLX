@@ -1,12 +1,18 @@
 .data  
+;; Inicio variables de entrada y salida
 A:          .float  10.0
 B:          .float  20.0
 C:          .float  30.0
 D:          .float  40.0
 E:          .float  50.0
 F:          .float  60.0
+
 Resultado:  .float  0
+
+;; Fin variables de E/S
+
 cero:       .float  0.0
+
 
 .text
 .global main
@@ -60,10 +66,10 @@ main:
     MULTF f31, f25, f28 ; Resultado final en f31
 
     SF Resultado, f31   ; Guardar
-    TRAP 0              ; TERMINAR (Ruta normal)
+    TRAP 0              ; Terminar normal
 
 division_por_cero:
     LF f31, cero
     SF Resultado, f31
-    TRAP 0              ; TERMINAR (Ruta error)
+    TRAP 0              ; Terminar con error
 

@@ -1,5 +1,5 @@
 .data  
-;; INICIO VARIABLES DE ENTRADA Y SALIDA: NO MODIFICAR ORDEN 
+;; Inicio variables de entrada y salida
 A:				.float		10.0
 B:				.float		20.0
 C:				.float		30.0
@@ -9,17 +9,16 @@ F:				.float		60.0
 
 Resultado:		.float		0
 
-;; FIN VARIABLES DE E/S 
-
+;; Fin variables de E/S
 
 cero:			.float 		0.0
+
 
 .text
 .global main
 
 main:
-
-	;; CARGAMOS LOS VALORES EN LOS REGISTROS FLOTANTES
+	;; Cargamos los valores en los registros flotantes
 	LF f0, A 	; f0 = A
 	LF f1, B 	; f1 = B
 	LF f2, C 	; f2 = C
@@ -28,7 +27,7 @@ main:
 	LF f5, F 	; f5 = F
 
 
-	; COMPROBAMOS DIVISIONES POR 0 (EN CASO DE QUE SEA VERDADERA, SALTAMOS A DIVISION POR 0)
+	; Comprobamos divisiones por 0 (En caso de que sea verdadera, saltamos la division por 0)
 	LF f30, cero
 	
 	EQF f5, f30		; comprueba si F == 0
@@ -42,7 +41,7 @@ main:
 
 
 
-	;A*B*C PARA EL DENOMINADOR DE E/(A*B*C)
+	;A*B*C para el denominador de E/(A*B*C)
 	MULTF f10, f0, f1	; f10 = A*B
 	MULTF f10, f10, f2	; f10 = A*B*C
 
@@ -50,7 +49,7 @@ main:
 	BFPT division_por_cero
 
 
-	;E*F PARA EL DENOMINADOR DE D/(E*F)
+	;E*F para el denominador de D/(E*F)
 	MULTF f11, f4, f5	; f11 = E*F
 
 	EQF f11, f30		; comprueba si E*F == 0
@@ -65,51 +64,43 @@ main:
 	; C/D
 	DIVF f22,f2,f3		; f22 = C/D
 
-	; CALCULAMOS E/(A*B*C)
+	; Calculamos E/(A*B*C)
 	DIVF f23,f4,f10		; f23 = E/(A*B*C)
 
-	; CALCULAMOS D/(E*F)
+	; Calculamos D/(E*F)
 	DIVF f24,f3,f11		; f24 = D/(E*F)
 
-
-	;SUMAMOS LOS 5 TERMINOS ANTERIORES
+	; Sumamos los 5 terminos anteriores
 	ADDF f25,f20,f21	; f25 = A/F + B/E
 	ADDF f25,f25,f22	; f25 = + C/D
 	ADDF f25,f25,f23	; f25 = + E/(A*B*C)
 	ADDF f25,f25,f24	; f25 = + D/(E*F)
 
-
-	; CALCULAMOS (A+B+C)
+	; Calculamos (A+B+C)
 	ADDF f26,f0,f1		; f26 = A + B
 	ADDF f26,f26,f2		; f26 = A + B + C
 
-
-	; CALCULAMOS (D+E+F)
+	; Calculamos (D+E+F)
 	ADDF f27,f3,f4		; f27 = D + E
 	ADDF f27,f27,f5		; f27 = D + E + F
 
 
-	; CALCULAMOS (A+B+C) * (D+E+F)
+	; Calculamos (A+B+C) * (D+E+F)
 	MULTF f28,f26,f27	; f28 = (A+B+C) * (D+E+F)
 
-	; CALCULAMOS RESULTADO FINAL
+	; Calculamos resultado final
 	MULTF f31,f25,f28	
 
-	; GUARDAMOS RESULTADO
+	; Guardamos resultado
 	SF Resultado, f31
-
 
 	J fin
 
 
 division_por_cero:
-	; EN CASO DE DIVISION POR 0, RESULTADO = 0
+	; En caso de division por 0, resultado = 0
 	LF f31, cero
 	SF Resultado, f31
 
-
 fin:
 	TRAP 0
-
-
-
