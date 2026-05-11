@@ -276,7 +276,7 @@ fin_descifrado:
 	TRAP 0 ; Finaliza la ejecución 
 
 
-; Funciones auxiliares de Trap 5
+;; Funciones auxiliares de Trap 5
 ; printLINEA: R30 el valor para sacar en ASCII y HEX 
 ; Modifica R14 
 
